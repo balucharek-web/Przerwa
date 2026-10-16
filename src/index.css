@@ -1,0 +1,7 @@
+@import "tailwindcss";
+
+/* Ensure all input fields, textareas and editable areas permit native text selection and clipboard operations */
+input, textarea {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+}

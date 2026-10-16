@@ -1,0 +1,6 @@
+{
+  "name": "Czas Przerwy - PWA",
+  "description": "Aplikacja PWA do monitorowania czasu przerw w pracy z limitem 30 minut, alarmem dźwiękowym 3 minuty i historią sesji.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
