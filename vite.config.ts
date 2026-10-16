@@ -73,6 +73,19 @@ export default defineConfig(() => {
               icons: [{ src: './icon-192.png', sizes: '192x192' }],
             },
           ],
+          // @ts-expect-error WICG manifest widgets member
+          widgets: [
+            {
+              name: 'Zegar Przerwy',
+              short_name: 'Przerwa',
+              description: 'Widżet z zegarem i przyciskami start / stop',
+              tag: 'break-timer-widget',
+              template: 'widget-template',
+              ms_tile: {
+                image: './icon-192.png',
+              },
+            },
+          ],
         },
         workbox: {
           globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
