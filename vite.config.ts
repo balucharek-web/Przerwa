@@ -14,7 +14,7 @@ export default defineConfig(() => {
         registerType: 'autoUpdate',
         includeAssets: ['favicon.png', 'apple-touch-icon.png', 'icon-192.png', 'icon-512.png'],
         manifest: {
-          id: '/',
+          id: './',
           name: 'Czas Przerwy',
           short_name: 'Przerwa',
           description: 'Aplikacja PWA do monitorowania czasu przerw w pracy z limitem 30 minut, alarmem 3 minuty i historią.',
@@ -32,10 +32,22 @@ export default defineConfig(() => {
               purpose: 'any',
             },
             {
+              src: './icon-192.png',
+              sizes: '192x192',
+              type: 'image/png',
+              purpose: 'maskable',
+            },
+            {
               src: './icon-512.png',
               sizes: '512x512',
               type: 'image/png',
               purpose: 'any',
+            },
+            {
+              src: './icon-512.png',
+              sizes: '512x512',
+              type: 'image/png',
+              purpose: 'maskable',
             },
           ],
           shortcuts: [
