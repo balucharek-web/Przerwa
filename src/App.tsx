@@ -19,6 +19,7 @@ import { alarmService } from './services/alarm';
 import { TodayView } from './components/TodayView';
 import { HistoryView } from './components/HistoryView';
 import { SettingsView } from './components/SettingsView';
+import { WidgetView } from './components/WidgetView';
 import { AlarmBanner } from './components/AlarmBanner';
 import { OfflineIndicator } from './components/OfflineIndicator';
 import { PWAInstallButton } from './components/PWAInstallButton';
@@ -61,6 +62,18 @@ export default function App() {
 
   // Active Tab
   const [activeTab, setActiveTab] = useState<ActiveTab>('today');
+
+  // Widget mode state (?mode=widget)
+  const [isWidgetMode, setIsWidgetMode] = useState<boolean>(() => {
+    try {
+      if (typeof window !== 'undefined' && window.location.search) {
+        return window.location.search.includes('mode=widget') || window.location.search.includes('action=');
+      }
+      return false;
+    } catch {
+      return false;
+    }
+  });
 
   // Break state
   const [isOnBreak, setIsOnBreak] = useState<boolean>(() => {
@@ -136,19 +149,41 @@ export default function App() {
     });
   };
 
-  // Automatically configure webhook if passed via URL (e.g. ?webhook=https://chat.googleapis.com/...)
+  // Automatically configure webhook or actions if passed via URL (e.g. ?webhook=... or ?action=start)
   useEffect(() => {
     try {
       if (typeof window !== 'undefined' && window.location.search) {
         const params = new URLSearchParams(window.location.search);
         const wh = params.get('webhook');
         const usr = params.get('user');
+        const action = params.get('action');
+        const mode = params.get('mode');
+
         if (wh && wh.startsWith('https://chat.googleapis.com/')) {
           handleUpdateSettings({
             googleChatWebhookUrl: wh.trim(),
             ...(usr ? { googleChatUserName: usr.trim() } : {}),
           });
-          window.history.replaceState({}, '', window.location.pathname);
+        }
+
+        if (mode === 'widget' || action) {
+          setIsWidgetMode(true);
+        }
+
+        if (action === 'start') {
+          const currentlyOnBreak = JSON.parse(localStorage.getItem('is_on_break') || 'false');
+          if (!currentlyOnBreak) {
+            handleToggleBreak();
+          }
+        } else if (action === 'stop') {
+          const currentlyOnBreak = JSON.parse(localStorage.getItem('is_on_break') || 'false');
+          if (currentlyOnBreak) {
+            handleToggleBreak();
+          }
+        }
+
+        if (wh || action) {
+          window.history.replaceState({}, '', window.location.pathname + (mode === 'widget' ? '?mode=widget' : ''));
         }
       }
     } catch {
@@ -372,6 +407,26 @@ export default function App() {
     alarmService.stopAlarm();
   };
 
+  // Dedicated Home Screen Widget View
+  if (isWidgetMode) {
+    return (
+      <WidgetView
+        isOnBreak={isOnBreak}
+        currentBreakStart={currentBreakStart}
+        records={records}
+        currentCycle={currentCycle}
+        settings={settings}
+        onStartBreak={() => {
+          if (!isOnBreak) handleToggleBreak();
+        }}
+        onStopBreak={() => {
+          if (isOnBreak) handleToggleBreak();
+        }}
+        onSwitchToFullApp={() => setIsWidgetMode(false)}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans antialiased">
       {/* Top Header Bar */}
@@ -393,6 +448,16 @@ export default function App() {
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Widget Mode Button */}
+          <button
+            onClick={() => setIsWidgetMode(true)}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition active:scale-95 shadow-sm border border-slate-700/60"
+            title="Włącz kompaktowy widżet ze stoperem i przyciskami start / stop"
+          >
+            <Clock className="w-3.5 h-3.5 text-blue-400" />
+            <span>Widżet</span>
+          </button>
+
           {/* Sound Test Button */}
           <button
             onClick={handleTestAlarm}
