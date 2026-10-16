@@ -14,6 +14,7 @@ import {
   Layers,
 } from 'lucide-react';
 import { AppSettings, BreakRecord } from '../types';
+import { usePWAInstall } from '../hooks/usePWAInstall';
 
 interface Props {
   isOnBreak: boolean;
@@ -38,6 +39,7 @@ export const WidgetView: React.FC<Props> = ({
 }) => {
   const [showInstructions, setShowInstructions] = useState(false);
   const [pipActive, setPipActive] = useState(false);
+  const { isInstallable, install } = usePWAInstall();
 
   // Compute timing
   const now = Date.now();
@@ -94,10 +96,12 @@ export const WidgetView: React.FC<Props> = ({
           setPipActive(false);
         });
       } else {
-        alert('Przeglądarka na tym urządzeniu nie obsługuje jeszcze pływających okien Picture-in-Picture. Możesz dodać widżet bezpośrednio do ekranu głównego telefonu!');
+        // Open in-app instructions rather than window.alert
+        setShowInstructions(true);
       }
     } catch (err) {
       console.warn('Błąd otwarcia PiP:', err);
+      setShowInstructions(true);
     }
   };
 
@@ -261,6 +265,21 @@ export const WidgetView: React.FC<Props> = ({
             <span className="text-[10px] font-normal opacity-80 lowercase">wyślij stop na czat</span>
           </button>
         </div>
+
+        {/* Install / Add to Home Screen button */}
+        <button
+          onClick={async () => {
+            if (isInstallable) {
+              await install();
+            } else {
+              setShowInstructions(true);
+            }
+          }}
+          className="w-full py-3 px-3 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-emerald-600 hover:from-blue-500 hover:to-emerald-500 text-white text-xs font-bold flex items-center justify-center gap-2 transition shadow-lg shadow-blue-950/40 active:scale-95"
+        >
+          <Smartphone className="w-4 h-4" />
+          <span>Dodaj ten widżet do ekranu telefonu</span>
+        </button>
 
         {/* Picture-in-Picture floating option */}
         <button
